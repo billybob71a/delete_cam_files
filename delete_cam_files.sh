@@ -13,18 +13,19 @@ check_date() {
 
 cameras=("cam1" "cam2" "cam3")
 for cams in ${!cameras[@]}; do
-	echo ${cameras[$cams]}
-	_output[$cams]=" "
-	_output[$cams]+=$(find /home/petery/${cameras[$cams]} -mtime +5 2>&1)
+	echo "Under cam ${cameras[$cams]}" >> /home/petery/delete_cam_files-$(date +%Y-%m-%d).log
+	_output[$cams]+=$(find /home/petery/${cameras[$cams]} -mtime +5 )
 	_output_arr=($(echo ${_output[$cams]} | awk 'NR>0' RS=' '))
+	len=${#_output_arr[@]}
+	echo "There were ${len} files found which require deletion" >> /home/petery/delete_cam_files-$(date +%Y-%m-%d).log
 	for i in ${!_output_arr[@]}; do
-		echo ${_output_arr[i]} >> /home/petery/delete_cam_files-$(date +%Y-%m-%d).log
-		rm ${_output_arr[i]}
+		echo ${_output_arr[$i]} >> /home/petery/delete_cam_files-$(date +%Y-%m-%d).log
+		if [[ ${_output_arr[$i]} == *jpg ]] || [[ ${_output_arr[$i]} == *mp4 ]] ; then
+			rm ${_output_arr[$i]}
+		else
+			rmdir ${_output_arr[$i]};
+		fi
 	done  
-	# echo ${_output[$cams]} >> /home/petery/delete_cam_files-$(date +%Y-%m-%d).log 
-	# echo "i will check the date"
-	# echo "the output is $_output[$cams]"
-	# echo "the cam is ${cameras[$cams]} here"
 	check_date ${_output[$cams]} ${cameras[$cams]}
 done
 # _output=$(find /home/petery/cam1 -mtime +7 -delete > /home/petery/delete_cam_files-$(date +%Y-%m-%d).log 2>&1)
